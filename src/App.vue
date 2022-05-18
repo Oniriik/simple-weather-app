@@ -16,19 +16,22 @@
       class="weather min-w-400 m-auto bg-black/70 w-auto h-auto rounded-3xl p-8"
       v-if="initialized"
     >
-      <div class="search flex gap-3 items-center justify-center">
-        <input
-          v-model="fieldCity"
-          type="text"
-          class="rounded-3xl w-40 pl-3 pr-3 pt-1 pb-1 outline-0"
-          @keyup.enter="updateWeather(fieldCity)"
-        />
-        <img
-          src="@/assets/search.png"
-          alt="search"
-          class="w-4 h-4 invert cursor-pointer"
-          @click="updateWeather(fieldCity)"
-        />
+      <div class="search flex flex-col">
+        <div class="flex gap-3 items-center justify-center">
+          <input
+            v-model="fieldCity"
+            type="text"
+            class="rounded-3xl w-40 pl-3 pr-3 pt-1 pb-1 outline-0"
+            @keyup.enter="updateWeather(fieldCity)"
+          />
+          <img
+            src="@/assets/search.png"
+            alt="search"
+            class="w-4 h-4 invert cursor-pointer"
+            @click="updateWeather(fieldCity)"
+          />
+        </div>
+        <p class="text-center text-red-600 text-xs mt-1">{{ message }}</p>
       </div>
       <div
         class="
@@ -66,6 +69,7 @@ export default {
     return {
       initialized: false,
       apiKey: process.env.VUE_APP_WEATHER_API_KEY,
+      message: "",
       fieldCity: "",
       weather: {},
       background: {
@@ -75,27 +79,25 @@ export default {
   },
   methods: {
     getWeather(city) {
-      console.log(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${this.apiKey}`
-      );
       axios
         .get(
           `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${this.apiKey}`
         )
         .then((res) => {
+          this.message = "";
           this.weather = { ...res.data };
           this.weather.weatherIcon = `https://openweathermap.org/img/wn/${res.data.weather[0].icon}@2x.png`;
 
-          fetch(`https://source.unsplash.com/1600x900/?${this.weather.weather[0].description}`).then(
-            (response) => {
-              document.getElementById(
-                "page-container"
-              ).style.backgroundImage = `url('${response.url}')`;
-            }
-          );
+          fetch(
+            `https://source.unsplash.com/1600x900/?${this.weather.weather[0].description}`
+          ).then((response) => {
+            document.getElementById(
+              "page-container"
+            ).style.backgroundImage = `url('${response.url}')`;
+          });
         })
-        .catch((err) => {
-          console.error(err);
+        .catch(() => {
+          this.message = "sorry we dont have infos for this city";
         });
       return;
     },
@@ -105,10 +107,9 @@ export default {
     },
     initialize() {
       this.getWeather("paris");
-      setTimeout(()=>{
+      setTimeout(() => {
         this.initialized = true;
-      },500)
-      
+      }, 500);
     },
   },
   created() {
